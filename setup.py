@@ -14,7 +14,7 @@ setuptools.setup(
     description="Show current weather from OpenWeather API in console.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/lraulin/pyweather",
+    url="https://github.com/lraulin/excelparse",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
