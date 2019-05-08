@@ -7,6 +7,7 @@ import sys
 import requests
 from openpyxl import Workbook, load_workbook
 import json
+import time
 
 TIMEOUT = 15
 FILE_NAME = "FOUO-USDOT-website list 20190413.xlsx"
@@ -14,7 +15,9 @@ SHEET_NAME = "Source-Live Websites w Owners"
 OUTPUT_FILE = "url_responses.json"
 
 
-
+def create_backup():
+    backup_filename = f"{FILE_NAME}.bak~{time.time()}"
+    copyfile(FILE_NAME, backup_filename)
 
 def check_for_redirects(url):
     print(f"Checking {url}...")
@@ -103,6 +106,7 @@ def load_json(file):
 def main():
     statuses = check_websites('Canonical URL')
     save_json(statuses)
+    create_backup()
     modify_xlsx()
 
 if __name__ == "__main__":
