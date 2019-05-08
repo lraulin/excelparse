@@ -104,8 +104,8 @@ def load_json(file):
 
 
 def main():
-    statuses = check_websites('Canonical URL')
-    save_json(statuses)
+    #statuses = check_websites('Canonical URL')
+    #save_json(statuses)
     create_backup()
     modify_xlsx()
 
