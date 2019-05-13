@@ -8,9 +8,9 @@ import requests
 from openpyxl import Workbook, load_workbook
 import json
 import time
+from sys import argv
 
 TIMEOUT = 15
-FILE_NAME = "FOUO-USDOT-website list 20190413.xlsx"
 SHEET_NAME = "Source-Live Websites w Owners"
 OUTPUT_FILE = "url_responses.json"
 
@@ -32,7 +32,8 @@ def check_for_redirects(url):
         result["status_code"] = r.status_code
         print(f"Status Code: {r.status_code}")
         if 300 <= r.status_code < 400:
-            result["r_url"] = r.headers['location']
+
+            result["r_url"] = r.headers['location'] if r.headers['location'][0:4] == 'http' else result["url"] + r.headers['location']
             print(f"Location: {r.headers['location']}")
         else:
             result["message"] = '[no redirect]'
@@ -52,8 +53,8 @@ def write_list(my_list):
         for item in my_list:
             f.write("%s\n" % item)
 
-def check_websites(column_header):
-    xl_file = pd.ExcelFile(FILE_NAME)
+def check_websites(file_name, column_header):
+    xl_file = pd.ExcelFile(file_name)
     data_frame = xl_file.parse('Source-Live Websites w Owners')
     column = data_frame.loc[:, column_header]
     urls = [x for x in column]
@@ -75,9 +76,7 @@ def update_redirect_col(sheet, arr):
         sheet.cell(column=7, row=i+2, value=url)
 
 
-def modify_xlsx():
-    # Get data
-    data = load_json(OUTPUT_FILE)
+def modify_xlsx(data):
     live = []
     redirect = []
     for item in data:
@@ -104,10 +103,12 @@ def load_json(file):
 
 
 def main():
-    statuses = check_websites('Canonical URL')
-    save_json(statuses)
+    file_name = argv[1]
+    statuses = check_websites(file_name, 'Canonical URL')
+    save_json(statuses, OUTPUT_FILE)
     create_backup()
-    modify_xlsx()
+    modify_xlsx(statuses)
+
 
 if __name__ == "__main__":
     main()
