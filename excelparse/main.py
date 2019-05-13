@@ -15,9 +15,9 @@ SHEET_NAME = "Source-Live Websites w Owners"
 OUTPUT_FILE = "url_responses.json"
 
 
-def create_backup():
-    backup_filename = f"{FILE_NAME}.bak~{time.time()}"
-    copyfile(FILE_NAME, backup_filename)
+def create_backup(file_name):
+    backup_filename = f"{file_name}.bak~{time.time()}"
+    copyfile(file_name, backup_filename)
 
 def check_for_redirects(url):
     print(f"Checking {url}...")
@@ -32,9 +32,9 @@ def check_for_redirects(url):
         result["status_code"] = r.status_code
         print(f"Status Code: {r.status_code}")
         if 300 <= r.status_code < 400:
-
-            result["r_url"] = r.headers['location'] if r.headers['location'][0:4] == 'http' else result["url"] + r.headers['location']
-            print(f"Location: {r.headers['location']}")
+            re_res = requests.get(url, allow_redirects=True)
+            result['r_url'] = re_res.url
+            print(f"Location: {re_res.url}")
         else:
             result["message"] = '[no redirect]'
             print('No Redirect')
@@ -76,7 +76,7 @@ def update_redirect_col(sheet, arr):
         sheet.cell(column=7, row=i+2, value=url)
 
 
-def modify_xlsx(data):
+def modify_xlsx(data, file_name):
     live = []
     redirect = []
     for item in data:
@@ -86,11 +86,11 @@ def modify_xlsx(data):
         redirect.append(item['r_url'])
 
     # Save data
-    wb = load_workbook(FILE_NAME)
+    wb = load_workbook(file_name)
     sheet = wb[SHEET_NAME]
     create_live_col(sheet, live)
     update_redirect_col(sheet, redirect)
-    wb.save(FILE_NAME)
+    wb.save(file_name)
 
 
 def save_json(data, file):
@@ -106,8 +106,8 @@ def main():
     file_name = argv[1]
     statuses = check_websites(file_name, 'Canonical URL')
     save_json(statuses, OUTPUT_FILE)
-    create_backup()
-    modify_xlsx(statuses)
+    create_backup(file_name)
+    modify_xlsx(statuses, file_name)
 
 
 if __name__ == "__main__":
